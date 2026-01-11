@@ -1,0 +1,60 @@
+#+title: Todo list for 4g
+
+* Road to 1.0 [21/22]
+** [ ] Generate thread completions for ~4g-thread~ [1/4]
+*** [ ] cache catalogs 
+*** [ ] store in hash-table 4g--catalogs
+*** [ ] Make thread completions searchable by title
+*** [X] Add threadno to (duplicate) thread titles to disambiguate
+** [ ] Finalize 4g:, 4g-open: and 4g-download: link types [1/6]
+https://orgmode.org/manual/Adding-Hyperlink-Types.html
+*** [X] Format: 4g:site/board/thread/post
+*** [ ] Accept search terms in 4g: via ::
+*** [ ] Handle search terms with ~consult-org-heading~ or ~org-occur~
+*** [ ] Optional hash in 4g-download and 4g-open for caching and duplication avoidance
+*** [ ] Implement :export where it makes sense
+*** [ ] Implement :store where it makes sense
+*** [ ] Create global var with a mapping of site handler functions
+
+* Bonus
+** [ ] Thread watcher
+** [ ] Auto update (optional) for threads
+** [ ] Support other sites
+** [ ] Promote org headings in posts by an appropriate level
+** [ ] Escape org headings in code blocks 
+** [ ] Point dead links to 4chan archives
+** [ ] SRS-based help and warning messages [1/7]
+- p-list or hash-table with symbol of a message as key
+*** [ ] if value is a number, it's how many times msg should be shown (per session?)
+(defun 4g--nag (SYM)
+  "Check the SRS counter pair of the msg associated with SYM in 4g--messages 
+  zero -> don't show,  
+  or positive (show and decrement counter)"
+
+(symbol-value '4g--msg-...)
+*** [X] All protip functions are to accept a :relevance key arg and respond non-nil if they are relevant
+No further computation should be done when called with :relevance. 
+*** [ ] if it's a list/array, record timestamps 
+*** [ ] Calculate due date based on rep timestamps
+*** [ ] Function that takes a message symbol and a function name to advise
+*** [ ] Advise relevant Org commands to add reps to list 
+**** [ ] Open/Cycle subheadings
+**** [ ] avy-org-goto-heading-timer
+**** [ ] Execute src block 
+**** [ ] consult-org-heading
+*** [ ] Only include Org cmds with a keybinding attached (where-is-internal?)
+** [ ] Option to prevent users from posting links outside code blocks
+** [ ] Download-all-in-thread button
+** [?] 4g-board-list: Avoid Org Table reconstruction
+Half-solved by using ~align~ startup option. 
+Only reload board list when
+- it's the active buffer
+- the buffer doesn't exist
+- 4g--boards is empty
+- there's no copy of the list in ~4g-directory~
+- or, :force-refresh option is given
+** [?] Fix newline issues with code blocks
+
+* Won't implement myself but would accept PRs
+** Posting (either captcha or 4chan pass)
+** Tree mode

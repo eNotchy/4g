@@ -1,0 +1,217 @@
+#+TITLE: 4g - Read image boards in Emacs Org mode
+#+OPTIONS: toc:2 num:nil
+#+PROPERTY: header-args :results silent
+
+* Overview
+4g (pronounced either like "fourg" or "for /g/" depending on your preference) lets you read image and discussion boards as Org documents in Emacs.
+Currently, only 4chan is supported.
+Support for 4chan archives and other websites is [[./TODO.org][planned]].
+
+* Requirements
+- Emacs 30 or later, compiled with libxml support
+
+* Installation
+This repository is not on MELPA (yet), so you install it directly from GitHub.
+
+In Emacs, run (once):
+#+begin_src emacs-lisp
+(package-vc-install "https://github.com/eNotchy/4g")
+#+end_src
+
+*** Updating later:
+=M-x= ~package-vc-update~ =RET= ~4g~ =RET=
+
+** Doom Emacs (straight.el)
+In =packages.el= inside your doom-dir:
+#+begin_src emacs-lisp
+(package! 4g
+  :recipe (:host github :repo "eNotchy/4g"))
+#+end_src
+
+Then run:
+#+begin_src shell
+doom sync
+#+end_src
+
+In your doom-dir's =config.el=, add:
+#+begin_src emacs-lisp
+(use-package! 4g
+  :defer t
+  ;; Your configuration here.
+  )
+#+end_src
+* Features
+** [code] blocks
+Code blocks on 4chan's "Technology" board, /g/, are converted to Org src blocks and can be executed via babel.
+4g attempts to guess the programming language of code blocks.
+It also lets you manually specify the language of your code snippet in a non-intrusive way by including a ~lang:~ directive in a comment at the top, like so:
+#+begin_example
+[code]
+// lang: javascript
+console.log("blabla")
+[/code]
+#+end_example
+
+#+begin_example
+[code]
+;; lang: clojure
+(println "hurr durr")
+[/code]
+#+end_example
+
+** Keyboard navigation (Quicknav)
+~4g-quicknav-mode~ loads a keymap with vim-style single-button shortcuts to quickly navigate 4g buffers (and Org documents in general):
+| Key   | Action                                                                                                                |
+|-------+-----------------------------------------------------------------------------------------------------------------------|
+| =q=   | Turn off quicknav mode for this buffer (re-enable with =C-c 4 q=)                                                     |
+| =?=   | Help (describe the quicknav keymap)                                                                                   |
+| =p=   | Switch to parent buffer (i.e., the buffer which linked you to the current one, or is higher up in the site hierarchy) |
+| =o=   | Open link                                                                                                             |
+| =l=   | Next link                                                                                                             |
+| =h=   | Previous link                                                                                                         |
+| =j=   | Next heading (and scroll the start of the window to it)                                                               |
+| =k=   | Previous heading  (and scroll the start of the window to it)                                                          |
+| =]=   | Next block (e.g. =src= block or =quote= block)                                                                        |
+| =[=   | Previous block                                                                                                        |
+| =}=   | Next src block (useful if you have set ~4g-greentext-rendering~ to ~:quote~)                                          |
+| ={=   | Previous src block                                                                                                    |
+| =;=   | Recenter screen                                                                                                       |
+| =/=   | ~org-occur~: Filter posts in this buffer by a search query                                                            |
+| =n=   | Next search result                                                                                                    |
+| =N=   | Previous search result                                                                                                |
+| =g g= | ~beginning-of-buffer~                                                                                                 |
+| =G=   | ~end-of-buffer~                                                                                                       |
+| =w w= | ~org-copy-subtree~: Copy the current post or thread to the killring. (Chosen due to Emacs' C-w and M-w bindings.)     |
+
+If you have =consult= installed, ~consult-org-headline~ is nice and you should consider binding it to a key in ~4g-quicknav-mode-map~.
+
+Quicknav also enables access to all functions in ~4g-prefix-map~ via a single keystroke:
+
+| Key | Action                   |
+|-----+--------------------------|
+| =b= | Board List               |
+| =c= | Catalog                  |
+| =t= | Thread                   |
+| =r= | Refresh                  |
+| =e= | View in External Browser |
+
+Note that quicknav is a freshly implemented feature and these keys are still subject to change on a whim.
+
+** Mouse navigation
+4g includes mouse-friendly navigation links at the top and bottom of every catalog and thread buffer.
+For those of you who have a fancy enough mouse at their disposal, 4g maps some commands to mouse buttons:
+| <mouse-8>  | ~4g-goto-parent~ |
+| <mouse-9>  | ~4g-mouse-cycle~ |
+| <mouse-10> | ~4g-prefix-map~  |
+
+** Thumbnails
+Thumbnails should /just werk/, provided that ~4g-directory~ is set to a writable directory where 4g can cache them.
+Set ~4g-directory~ to =nil= if you do not want 4g to download thumbnails.
+** Download buttons
+In every post with a file attachment you'll find a download button, which will download images to ~4g-image-download-directory~,  videos to ~4g-video-download-directory~ and other files to ~4g-fallback-download-directory~.
+Files are sorted by board and given their original filename plus a 4-character hash to prevent duplicate names.
+** Org link types
+4g defines the =4g:= Org link type so that you can tell all your friends on [[https://org-social.org/][Org Social]] about the witty and intellectually stimulating discussions you're having on 4chan.
+4g links follow the schema =4g:sitename/boardname/threadnumber=, so e.g.:
+#+begin_example
+4g:4chan/an/123456
+#+end_example
+The =4chan= bit may seem superfluous at the moment, but opens up the opportunity to add support for other websites to 4g. 
+
+*Please note that the format of the link types is subject to change until 4g has reached version 1.0.*
+** Minor mode
+4g defines the minor mode ~4g-mode~ with a corresponding keymap and menu entry.
+This means you can install hooks that run whenever 4g-mode is activated.
+For example:  
+
+#+begin_src emacs-lisp
+(add-hook '4g-mode-hook #'pixel-precision-mode)
+#+end_src
+
+In 4g buffers, commands are bound under the prefix ~C-c 4~ (also shown as "4g" in which-key)
+| =C-c 4 b= | Board List                   |
+| =C-c 4 c= | Catalog                      |
+| =C-c 4 t= | Thread                       |
+| =C-c 4 r= | Refresh                      |
+| =C-c 4 e= | View in External Browser     |
+| =C-c 4 p= | Back to catalog / board list |
+| =C-c 4 q= | Toggle 4g-quicknav-mode      |
+To make these bindings global, you could add this to your init file:
+#+begin_src emacs-lisp
+(keymap-global-set "C-c 4" 4g-prefix-map)
+#+end_src
+* Commands
+** Entry points
+| ~4g-board-list~ | List of all boards with descriptions and links to their catalogs |
+| ~4g-catalog~    | Prompt for board (e.g., =g=) and render catalog                  |
+| ~4g-thread~     | Prompt for board + thread number                                 |
+
+** Convenience commands
+| ~4g-refresh~         | Like pressing F5 in a browser                                               |
+| ~4g-view-in-browser~ | Open web browser to the page corresponding to the current 4g buffer         |
+| ~4g-goto-parent~     | From a thread buffer, go back to catalog. From a catalog, go to board list. |
+| ~4g-mouse-cycle~     | Move point to the position clicked on with the mouse and run org-cycle.     |
+
+Also check out the commands I've included in ~4g-quicknav-mode-map~
+* Configuration
+4g provides a number of customization options.
+Open ~M-x customize-group RET 4g~ or set them in your init.
+
+** Example config
+
+#+begin_src emacs-lisp
+(with-eval-after-load '4g
+  (setopt
+   ;; Don't add =verbatim markers= or #+quote blocks to quotes:
+   4g-greentext-rendering :as-is 
+   ;; Use 4chan's native time format and timezone:
+   4g-timestamp-format :4chan
+   ;; Save thumbnails on a ramdisk so they get deleted at every reboot:
+   4g-directory "/dev/shm/4g/"
+   ;; vim-style keys in 4g buffers
+   4g-quicknav t
+   ;; Open videos in vlc
+   4g-videolink-command 
+        (lambda (url)
+          (make-process :name "videoplayer"
+                        :command (list "vlc" url)
+                        :noquery t))
+   ;; Ask me every time something other than a video or image gets downloaded:
+   4g-fallback-download-directory nil)) 
+#+end_src
+
+** Options
+
+- ~4g-directory~ :: Cache directory for thumbnails and other data.
+  =nil= disables thumbnail downloads.
+  Defaults to an XDG‐style cache path on your system (e.g., =~/.cache/4g/=).
+
+- ~4g-greentext-rendering~ :: One of ~:verbatim~ (use ~==~), ~:quote~ (Org #+QUOTE block), or ~:as-is~.
+
+- ~4g-timestamp-format~ :: Either a ~format-time-string~ format (e.g., =" [%F %T]"=) or the keyword ~:4chan~ for a 4chan-style timestamp.
+
+- ~4g-guess-language-function~ :: Function taking a code snippet and returning an Org src language string or nil.
+  A simple regex guesser is provided; you can replace it if you like.
+
+- Download dirs :: ~4g-image-download-directory~, ~4g-video-download-directory~,
+  ~4g-fallback-download-directory~ — if unset or missing, 4g will prompt you for every file where to download it.
+* Testing
+
+Tests live under =test/=. Run them locally:
+
+#+begin_src shell
+emacs -Q --batch -L . \
+  -l 4g.el -l test/4g-tests.el \
+  -f ert-run-tests-batch-and-exit
+#+end_src
+* Contributing
+- Issues and merge requests welcome, but please don't expect me to respond in a timely fashion.
+- Please don't feel offended if I rewrite your submission to match my programming style, which is heavily influenced by Clojure.
+- As of now I don't have many tests, but please run them submitting:
+  #+begin_src shell
+  emacs -Q --batch -L . -l 4g.el -l test/4g-tests.el -f ert-run-tests-batch-and-exit
+  #+end_src
+- Keep new public symbols prefixed with 4g-, private symbols with 4g--
+- Try to keep byte-compile and native-compile warnings at zero.
+* License
+This project is free software under the GPLv3+ (see =LICENSE=).
