@@ -212,7 +212,6 @@ It must accept a single string argument (the video URL)."
 
 ;;; --- User Directories -------------------------------------------------------
 
-;;;###autoload
 (defcustom 4g-directory
   (file-name-as-directory
    (expand-file-name "4g"
@@ -231,10 +230,9 @@ Set to nil to disable thumbnail downloads entirely."
   :set (lambda (sym val)
          (set-default sym (and val (file-name-as-directory val)))))
 
-;;;###autoload
 (defcustom 4g-fallback-download-directory
   (or (getenv "XDG_DOWNLOAD_DIR")
-      (4g--existing-dir-or-nil "~/Downloads/"))
+      (and (file-directory-p "~/Downloads/") "~/Downloads/"))
   "Directory for downloading files other than videos and pictures."
   :type '(choice (const :tag "Prompt for every file" nil) (directory))
   :group '4g
@@ -242,7 +240,6 @@ Set to nil to disable thumbnail downloads entirely."
   :set (lambda (sym val)
          (set-default sym (and val (file-name-as-directory val)))))
 
-;;;###autoload
 (defcustom 4g-image-download-directory
   (or (getenv "XDG_PICTURES_DIR")
       (4g--existing-dir-or-nil "~/Pictures/")
@@ -254,7 +251,6 @@ Set to nil to disable thumbnail downloads entirely."
   :set (lambda (sym val)
          (set-default sym (and val (file-name-as-directory val)))))
 
-;;;###autoload
 (defcustom 4g-video-download-directory
   (or (getenv "XDG_VIDEOS_DIR")
       (4g--existing-dir-or-nil "~/Videos/")
