@@ -194,6 +194,7 @@ Open ~M-x customize-group RET 4g~ or set them in your init.
 
 - Download dirs :: ~4g-image-download-directory~, ~4g-video-download-directory~,
   ~4g-fallback-download-directory~ — if unset or missing, 4g will prompt you for every file where to download it.
+4g tries to guess sensible defaults.
 
 * Contributing
 - Issues and merge requests welcome, but please don't expect me to respond in a timely fashion.
