@@ -1,9 +1,8 @@
-#+TITLE: 4g - Read image boards in Emacs Org mode
+#+TITLE: 4g
 #+OPTIONS: toc:2 num:nil
 #+PROPERTY: header-args :results silent
 
-* Overview
-4g (pronounced either like "fourg" or "for /g/" depending on your preference) lets you read image and discussion boards as Org documents in Emacs.
+4g (pronounced either like =fourg= or =for /g/= depending on your preference) lets you read image and discussion boards as Org documents in Emacs.
 Currently, only 4chan is supported.
 Support for 4chan archives and other websites is [[./TODO.org][planned]].
 
