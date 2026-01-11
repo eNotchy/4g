@@ -194,15 +194,7 @@ Open ~M-x customize-group RET 4g~ or set them in your init.
 
 - Download dirs :: ~4g-image-download-directory~, ~4g-video-download-directory~,
   ~4g-fallback-download-directory~ — if unset or missing, 4g will prompt you for every file where to download it.
-* Testing
 
-Tests live under =test/=. Run them locally:
-
-#+begin_src shell
-emacs -Q --batch -L . \
-  -l 4g.el -l test/4g-tests.el \
-  -f ert-run-tests-batch-and-exit
-#+end_src
 * Contributing
 - Issues and merge requests welcome, but please don't expect me to respond in a timely fashion.
 - Please don't feel offended if I rewrite your submission to match my programming style, which is heavily influenced by Clojure.
