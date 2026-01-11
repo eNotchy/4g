@@ -1,6 +1,7 @@
 ;;; 4g.el --- Browse image boards in Org-Mode  -*- lexical-binding: t; -*-
 
 ;; Version: 0.8.1
+;; Summary: Browse imageboards in Org-Mode.
 ;; URL: https://github.com/eNotchy/4g
 ;; Package-Requires: ((emacs "30.1"))
 ;; Keywords: comm extensions hypermedia org
