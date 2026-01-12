@@ -1129,7 +1129,7 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
 (defun 4g-qnav-prev-src     () (interactive) (4g--recenter-after #'org-babel-previous-src-block 1))
 (defun 4g-qnav-help         () (interactive) (describe-keymap '4g-quicknav-map))
 
-;;;###autoload 
+;;;###autoload
 (defvar-keymap 4g-prefix-map
   :doc "Prefix keymap for 4g commands."
   :name "4g"

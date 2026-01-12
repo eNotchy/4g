@@ -17,7 +17,7 @@
 (require 'ert)
 (require '4g)
 
-(setq-local 4g--filetestpost
+(defvar 4g--filetestpost
   '(:no 107582981 :now "12/17/25(Wed)13:16:00" :name "Anonymous"
     :com "good on AMD yet?" :filename "img12345"
     :ext ".jpg" :w 1200 :h 675 :tn_w 125 :tn_h 70 :tim 1765995360846053
@@ -32,15 +32,13 @@
   (should
    (equal
     "[[4g-download:4chan/g/1765995360846053/.jpg][Download (48 KiB)]]"
-    (let ((4g--boardname "g")
-          (4g--sitename "4chan")
+    (let ((4g--sitename "4chan")
           (4g-image-download-directory nil))
-      (4g--gen-download-link 4g--filetestpost)))))
+      (4g--gen-download-link "g" 4g--filetestpost)))))
 
-(let ((4g--boardname "g")
-      (4g--sitename "4chan")
+(let ((4g--sitename "4chan")
       (4g-image-download-directory nil))
-  (4g--gen-download-link 4g--filetestpost))
+  (4g--gen-download-link "g" 4g--filetestpost))
 
 (ert-deftest 4g--country-emojification ()
   (should (equal nil (4g--emojify-country-code "asdf")))
@@ -65,19 +63,20 @@
               (cdr
                (let ((4g-directory "/dev/shm/4g"))
                  (4g--get-thumbnail-url+path
+                  "g"
                   (list :md5 "KKKK////////safdsdf12w=="
-                        :tim 1234)
-                  :board "g")))))
+                        :tim 1234))))))
     (should-not
      (let ((4g-directory nil))
        (4g--get-thumbnail-url+path
+        "g"
         (list :md5 "KKKK////////safdsdf12w=="
-              :tim 1234)
-        :board "g")))
-    (should-not
+              :tim 1234))))
+    (should-error
      (let ((4g-directory "/dev/shm/4g"))
        (4g--get-thumbnail-url+path
-        (list :md5 "KKKK////////safdsdf12w=="
+        "g"
+        (list :md5 "KKKKx////////safdsdf12w=="
               :tim 1234)))))
 
 (provide '4g-tests)
