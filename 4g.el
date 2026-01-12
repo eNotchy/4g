@@ -65,8 +65,8 @@
 ;;; --- Global Constants -------------------------------------------------------
 
 (defconst 4g-version
-  "0.8.1")
-  ;; (concat "DEV-" (format-time-string "%s")))
+  ;; "0.8.1"
+  (concat "DEV-" (format-time-string "%s")))
 
 (defconst 4g--media-types
   (map-pairs
@@ -108,15 +108,6 @@
         (start-process "termux-open-url" nil "termux-open-url" url)
         (message "Opening via termux-open-url: %s" url))
     (browse-url url)))
-
-(defun 4g--play-video-externally (url)
-  (if-let ((cmd (seq-some
-                 #'executable-find
-                 ["mpv" "smplayer" "ffplay" "vlc" "totem" "xine" "xdg-open"])))
-        (make-process :name "videoplayer"
-                      :command (list cmd url)
-                      :noquery t)
-    (4g--browse-url url)))
 
 ;;; --- User Options -----------------------------------------------------------
 
@@ -196,19 +187,38 @@ When this function returns nil, the block's language defaults to `elisp`."
   :safe #'functionp)
 
 ;;;###autoload
-(defcustom 4g-videolink-command #'4g--play-video-externally
-  "Command used to play back a video given its HTTPS URL.
+(defcustom 4g-videolink-command nil
+  "How to open video links.
 
-This function is called as:
-  (funcall 4g-videolink-command URL)
+Allowed values:
 
-It must accept a single string argument (the video URL)."
+- nil
+  Try a few popular video players (e.g. mpv/vlc) and fall back to
+  web browser if none are available.
+
+- `browse-url'
+  Always open the link in the default web browser.
+
+- A string
+  A command name (e.g. \"vlc\") to invoke for playing the link.
+
+- A list of strings
+  A command with arguments (e.g. \='(\"mpv\" \"--loop\")).
+
+- A function
+  A function called with one argument: the URL string.
+
+When a command (string or list) is used, it is expected to accept the URL
+as its final argument."
   :type '(choice
-          (function-item 4g--play-video-externally)
-          (function-item browse-url)
-          (function :tag "Custom function (URL -> playback)"))
-  :group '4g
-  :safe #'functionp)
+          (const :tag "Auto (players then browser)" nil)
+          (const :tag "Web browser (`browse-url')" browse-url)
+          (string :tag "Command (single string)")
+          (cons :tag "Command with arguments (list of strings)"
+                (string :tag "Command")
+                (repeat :tag "Args" (string :tag "Arg")))
+          (function :tag "Function (called with URL string)"))
+  :group '4g)
 
 ;;; --- User Directories -------------------------------------------------------
 
@@ -424,6 +434,31 @@ CALLBACK takes no arguments."
        (run-at-time 0 nil callback)))
    "4g-download-thread"))
 
+;;; --- Opening Files ----------------------------------------------------------
+
+(defun 4g--play-video (url)
+  (if (functionp 4g-videolink-command)
+      (funcall 4g-videolink-command url)
+    (if-let* ((app (or 4g-videolink-command
+                       (seq-some
+                        #'executable-find
+                        ["mpv" "smplayer" "ffplay" "vlc"
+                         "totem" "xine" "xdg-open"])))
+              (cmd (cond
+                    ;; Command
+                    ((stringp app)
+                     (list app url))
+                    ;; Custom command with args
+                    ((listp app)
+                     (append app (list url)))
+                    (t (user-error "Invalid value for 4g-videolink command: %s"
+                                   4g-videolink-command)))))
+          (make-process :name "videoplayer"
+                        :command cmd
+                        :noquery t)
+      ;; No videoplayer found
+      (4g--browse-url url))))
+
 ;;; --- Download Links ---------------------------------------------------------
 
 (defun 4g--gen-filename (post)
@@ -519,7 +554,7 @@ CALLBACK takes no arguments."
     (let ((src        (format "%s/%s/%s%s" 4g--4chan-icdn board tim ext))
           (media-type (map-elt 4g--media-types ext)))
       (pcase media-type
-        (:video (funcall 4g-videolink-command src))
+        (:video (4g--play-video src))
         ((and :image (guard (display-graphic-p))) (eww-browse-url src))
         (_ (4g--browse-url src))))))
 
