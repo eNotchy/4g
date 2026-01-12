@@ -1,5 +1,7 @@
 #+title: Todo list for 4g
 
+/This file looks better in Emacs or raw than on Github./
+
 * Road to 1.0 [21/22]
 ** [ ] Generate thread completions for ~4g-thread~ [1/4]
 *** [ ] cache catalogs 
@@ -37,11 +39,6 @@ No further computation should be done when called with :relevance.
 *** [ ] if it's a list/array, record timestamps 
 *** [ ] Calculate due date based on rep timestamps
 *** [ ] Function that takes a message symbol and a function name to advise
-*** [ ] Advise relevant Org commands to add reps to list 
-**** [ ] Open/Cycle subheadings
-**** [ ] avy-org-goto-heading-timer
-**** [ ] Execute src block 
-**** [ ] consult-org-heading
 *** [ ] Only include Org cmds with a keybinding attached (where-is-internal?)
 ** [ ] Option to prevent users from posting links outside code blocks
 ** [ ] Download-all-in-thread button
