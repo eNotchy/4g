@@ -13,7 +13,7 @@ Support for 4chan archives and other websites is [[./TODO.org][planned]].
 * Quickstart (without install)
 1. Open 4g.el in Emacs
 2. Run ~M-x eval-buffer~ (i.e. press =x= while holding =Alt=, then type ~eval-buffer~ into the prompt and press =Enter=)
-3. Run ~M-x 4g-board-list~ and browser whichever board interests you.
+3. Run ~M-x 4g-board-list~ and browse whichever board interests you.
 
 * Installation
 This repository is not on MELPA (yet), so you install it directly from GitHub.
