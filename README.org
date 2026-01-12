@@ -1,6 +1,7 @@
 #+TITLE: 4g
 #+OPTIONS: toc:2 num:nil
 #+PROPERTY: header-args :results silent
+# NOTE: If you edit this file, write one sentence per line, unless formatting makes it necessary to diverge from this rule.
 
 4g (pronounced either like =fourg= or =for /g/= depending on your preference) lets you read image and discussion boards as Org documents in Emacs.
 Currently, only 4chan is supported.
@@ -9,8 +10,16 @@ Support for 4chan archives and other websites is [[./TODO.org][planned]].
 * Requirements
 - Emacs 30 or later, compiled with libxml support
 
+* Quickstart (without install)
+1. Open 4g.el in Emacs
+2. Run ~M-x eval-buffer~ (i.e. press =x= while holding =Alt=, then type ~eval-buffer~ into the prompt and press =Enter=)
+3. Run ~M-x 4g-board-list~ and browser whichever board interests you.
+
 * Installation
 This repository is not on MELPA (yet), so you install it directly from GitHub.
+
+** Standard (package-vc.el)
+Note that this requires ~git~ to be available on your computer.
 
 In Emacs, run (once):
 #+begin_src emacs-lisp
@@ -81,8 +90,11 @@ console.log("blabla")
 | =g g= | ~beginning-of-buffer~                                                                                                 |
 | =G=   | ~end-of-buffer~                                                                                                       |
 | =w w= | ~org-copy-subtree~: Copy the current post or thread to the killring. (Chosen due to Emacs' C-w and M-w bindings.)     |
+| =s=   | ~search-map~                                                                                                          |
 
-If you have =consult= installed, ~consult-org-headline~ is nice and you should consider binding it to a key in ~4g-quicknav-mode-map~.
+Note that quicknav is a freshly implemented feature and these keys are still subject to change on a whim.
+
+If you have =consult= installed, consider binding ~consult-org-headline~ to a key in ~4g-quicknav-mode-map~.
 
 Quicknav also enables access to all functions in ~4g-prefix-map~ via a single keystroke:
 
@@ -93,8 +105,6 @@ Quicknav also enables access to all functions in ~4g-prefix-map~ via a single ke
 | =t= | Thread                   |
 | =r= | Refresh                  |
 | =e= | View in External Browser |
-
-Note that quicknav is a freshly implemented feature and these keys are still subject to change on a whim.
 
 ** Mouse navigation
 4g includes mouse-friendly navigation links at the top and bottom of every catalog and thread buffer.
@@ -117,7 +127,7 @@ Files are sorted by board and given their original filename plus a 4-character h
 #+end_example
 The =4chan= bit may seem superfluous at the moment, but opens up the opportunity to add support for other websites to 4g. 
 
-*Please note that the format of the link types is subject to change until 4g has reached version 1.0.*
+*Please note that the format of the 4g-download and 4g-open link types is subject to change until 4g has reached version 1.0.*
 ** Minor mode
 4g defines the minor mode ~4g-mode~ with a corresponding keymap and menu entry.
 This means you can install hooks that run whenever 4g-mode is activated.
@@ -154,7 +164,7 @@ To make these bindings global, you could add this to your init file:
 Also check out the commands I've included in ~4g-quicknav-mode-map~
 * Configuration
 4g provides a number of customization options.
-Open ~M-x customize-group RET 4g~ or set them in your init.
+Open ~M-x customize-group RET 4g~ to explore them, or check the headings =User Options= and =User Directories= in =4g.el=.
 
 ** Example config
 
@@ -165,17 +175,13 @@ Open ~M-x customize-group RET 4g~ or set them in your init.
    4g-greentext-rendering :as-is 
    ;; Use 4chan's native time format and timezone:
    4g-timestamp-format :4chan
-   ;; Save thumbnails on a ramdisk so they get deleted at every reboot:
+   ;; Download thumbnails to a ramdisk so they get deleted every time the computer shuts down:
    4g-directory "/dev/shm/4g/"
    ;; vim-style keys in 4g buffers
    4g-quicknav t
-   ;; Open videos in vlc
-   4g-videolink-command 
-        (lambda (url)
-          (make-process :name "videoplayer"
-                        :command (list "vlc" url)
-                        :noquery t))
-   ;; Ask me every time something other than a video or image gets downloaded:
+   ;; Open videos in mpv and loop each video endlessly
+   4g-videolink-command (list "mpv" "--loop")
+   ;; Prompt for a directory every time you download a file other than a video or image:
    4g-fallback-download-directory nil)) 
 #+end_src
 
@@ -193,17 +199,12 @@ Open ~M-x customize-group RET 4g~ or set them in your init.
   A simple regex guesser is provided; you can replace it if you like.
 
 - Download dirs :: ~4g-image-download-directory~, ~4g-video-download-directory~,
-  ~4g-fallback-download-directory~ — if unset or missing, 4g will prompt you for every file where to download it.
-4g tries to guess sensible defaults.
+  ~4g-fallback-download-directory~ — if unset or missing, 4g will prompt you for every file where to download it. 4g tries to guess sensible defaults.
 
 * Contributing
 - Issues and merge requests welcome, but please don't expect me to respond in a timely fashion.
 - Please don't feel offended if I rewrite your submission to match my programming style, which is heavily influenced by Clojure.
-- As of now I don't have many tests, but please run them submitting:
-  #+begin_src shell
-  emacs -Q --batch -L . -l 4g.el -l test/4g-tests.el -f ert-run-tests-batch-and-exit
-  #+end_src
-- Keep new public symbols prefixed with 4g-, private symbols with 4g--
-- Try to keep byte-compile and native-compile warnings at zero.
+- Keep new public symbols prefixed with ~4g-~, private symbols with =4g--=
+- Run the script ~checkem.sh~ and keep warnings at zero.
 * License
 This project is free software under the GPLv3+ (see =LICENSE=).
