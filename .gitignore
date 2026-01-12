@@ -1,17 +1,52 @@
-# Compiled
-*.elc
+# --- Experiments, notes, references, scratchpad... ---
+/tmp/
+/local/
 
-# Packaging
-.cask/
-.eask/
-.eldev/
-.keg/
+# --- Editor / OS / tooling noise ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
 
-# Built distribution
-dist/
-
-# Backup files
+# --- Emacs backups / autosaves / lock files ---
 *~
+\#*\#
+.\#*
+
+# --- Compiled / generated Emacs Lisp artifacts ---
+*.elc
+*.eln
+*.native-elc
+*.loaddefs.el
+*-autoloads.el
+
+# --- ELPA / packaging outputs ---
+/dist/
+/build/
+/target/
+/*.tar
+/*.tar.gz
+/*.zip
+
+# --- Cask / Eask / Keg / eldev / straight / package dirs ---
+.cask/
+/.elpa/
+/.eask/
+/.keg/
+.eldev/
+straight/
+/var/
+.eldev-cache/
+
+# --- ERT / test coverage / lint artifacts ---
+coverage/
+*.lcov
+.emacs.d/
+/server/
+
+# --- Local environment / secrets ---
+.dir-locals-2.el
+.env
 
 # Undo-tree save-files
 *.~undo-tree
