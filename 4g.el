@@ -1,7 +1,6 @@
 ;;; 4g.el --- Browse image boards in Org-Mode  -*- lexical-binding: t; -*-
 
-;; Version: 0.8.1
-;; Summary: Browse imageboards in Org-Mode.
+;; Version: 0.8.2
 ;; URL: https://github.com/eNotchy/4g
 ;; Package-Requires: ((emacs "30.1"))
 ;; Keywords: comm extensions hypermedia org
@@ -24,7 +23,6 @@
 ;;; Commentary:
 
 ;; 4g lets you browse image and discussion boards in Org mode.
-;;
 ;; Currently, only 4chan is supported.
 
 ;;; Code:
@@ -65,8 +63,8 @@
 ;;; --- Global Constants -------------------------------------------------------
 
 (defconst 4g-version
-  ;; "0.8.1"
-  (concat "DEV-" (format-time-string "%s")))
+  "0.8.2")
+  ;; (concat "DEV-" (format-time-string "%s")))
 
 (defconst 4g--media-types
   (map-pairs
