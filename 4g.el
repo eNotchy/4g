@@ -1142,8 +1142,6 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
 (defvar-keymap 4g-quicknav-map
   :doc "Quick navigation keys for 4g buffers (buffer-local via `4g-quicknav-mode')."
   :parent 4g-prefix-map
-  ;; "j"   #'next-line
-  ;; "k"   #'previous-line
   "o"   #'org-open-at-point
   "l"   #'org-next-link
   ";"   #'recenter
@@ -1180,10 +1178,11 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
 
 (defvar-keymap 4g-mode-map
   :doc "Keymap for `4g-mode'."
-  "C-c 4" (cons "4g" '4g-prefix-map)
+  "C-c 4" (cons "4g" 4g-prefix-map)
+  "<XF86Back>" (cons "Go to Parent buffer" #'4g-goto-parent)
   "<mouse-8>" (cons "Go to Parent buffer" #'4g-goto-parent)
   "<mouse-9>" #'4g-mouse-cycle
-  "<mouse-10>" '4g-prefix-map
+  "<mouse-10>" 4g-prefix-map
   :menu '("4g"
           ["QuickNav (this buffer)" 4g-quicknav-mode
            :style toggle
