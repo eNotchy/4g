@@ -1,6 +1,6 @@
 ;;; 4g.el --- Browse image boards in Org-Mode  -*- lexical-binding: t; -*-
 
-;; Version: 0.8.2
+;; Version: 0.8.3
 ;; URL: https://github.com/eNotchy/4g
 ;; Package-Requires: ((emacs "30.1"))
 ;; Keywords: comm extensions hypermedia org
@@ -63,7 +63,7 @@
 ;;; --- Global Constants -------------------------------------------------------
 
 (defconst 4g-version
-  "0.8.2")
+  "0.8.3")
   ;; (concat "DEV-" (format-time-string "%s")))
 
 (defconst 4g--media-types
