@@ -1074,17 +1074,15 @@ If only SITE is supplied, return footer for the board list."
                   title)))
     (4g--replace-literals final 4g--html-literals)))
 
-(defun 4g--op->org (thd &optional board)
+(cl-defun 4g--op->org (thd &key board swap)
   "Format the OP heading for a thread THD like: \"Title [R: x / I: y]\".
 shows `replies' and `images' as /italics/ when limits are set.
 From catalogs, this is called with a BOARD arg. From threads, without."
   (map-let (:no :replies :images :bumplimit :imagelimit :closed :sticky :archived) thd
     (let* ((title (4g--thread-title thd))
-           (title (if board (string-trim (string-limit title 50)) title))
-           (link  (when board (format "[[4g:4chan/%s/%s][%s]]" board no title)))
-           (l-str (if link
-                      (concat link (make-string (max 0 (- 50 (length title))) 32))
-                    title))
+           (l-str  (if board
+                       (format "[[4g:4chan/%s/%s][%s]]" board no title)
+                     title))
            (lock  (if closed "🔒" ""))
            (pin   (if sticky "📌" ""))
            (old   (if archived "📦" ""))
@@ -1093,15 +1091,17 @@ From catalogs, this is called with a BOARD arg. From threads, without."
                     (format "%s" replies)))
            (i-str (if (eq 1 imagelimit)
                       (format "/%s/" images)
-                    (format "%s" images))))
-      ;; more intuitive but too attention-grabbing: "%s [💬 %s / 🖼️ %s]%s%s%s"
-      (format "%s[R: %s / I: %s]%s%s%s"
-              l-str r-str i-str pin lock old))))
+                    (format "%s" images)))
+           (stats (format "[%s | R: %3s | I: %3s]%s%s%s"
+                          no r-str i-str pin lock old)))
+      (if swap
+          (concat l-str " " stats) 
+        (concat stats " " l-str)))))  
 
 (defun 4g--catalog-thread->org (board thd)
   "Return a string for one thread THD on BOARD.
 Includes an OP line as a ** heading and its last_replies as *** headings."
-  (let* ((op-line  (4g--op->org thd board))
+  (let* ((op-line  (4g--op->org thd :board board))
          (op-reply (4g--reply->org board thd))
          (replystr (when-let ((replies (map-elt thd :last_replies))
                               (replyfn (apply-partially #'4g--reply->org board)))
