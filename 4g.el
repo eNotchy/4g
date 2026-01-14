@@ -1074,7 +1074,7 @@ If only SITE is supplied, return footer for the board list."
                   title)))
     (4g--replace-literals final 4g--html-literals)))
 
-(cl-defun 4g--op->org (thd &key board swap)
+(cl-defun 4g--op->org (thd &key board flip align-to)
   "Format the OP heading for a thread THD like: \"Title [R: x / I: y]\".
 shows `replies' and `images' as /italics/ when limits are set.
 From catalogs, this is called with a BOARD arg. From threads, without."
@@ -1092,11 +1092,14 @@ From catalogs, this is called with a BOARD arg. From threads, without."
            (i-str (if (eq 1 imagelimit)
                       (format "/%s/" images)
                     (format "%s" images)))
-           (stats (format "[%s | R: %3s | I: %3s]%s%s%s"
+           (space (if (numberp align-to)
+                      (propertize " " 'display `(space :align-to ,align-to))
+                    " "))
+           (stats (format "[ %s R %3s I %3s ]%s%s%s"
                           no r-str i-str pin lock old)))
-      (if swap
-          (concat l-str " " stats) 
-        (concat stats " " l-str)))))  
+      (if flip
+          (concat l-str space stats)
+        (concat stats space l-str)))))
 
 (defun 4g--catalog-thread->org (board thd)
   "Return a string for one thread THD on BOARD.
@@ -1115,7 +1118,6 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
 
 (defun 4g--recenter-after (fn &rest args)
   (apply fn args)
-  ;; (recenter)
   (set-window-start (selected-window) (point)))
 
 ;; Prefer named commands over lambdas (cleaner for help)
@@ -1283,7 +1285,7 @@ Fetch json data from 4chan or, if supplied, from URL."
        (posts    (map-elt (4g--fetch-json url) :posts))
        (posts    (4g--add-backlinks posts (4g--find-backlinks posts)))
        (op       (seq-first posts))
-       (headline (4g--op->org op :swap t))
+       (headline (4g--op->org op :flip t))
        (replyfun (apply-partially #'4g--reply->org board))
        (replies  (mapconcat replyfun posts "\n\n** "))
        (lweb     (format "[[%s][Web]]" web-url))
