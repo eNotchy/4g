@@ -1283,7 +1283,7 @@ Fetch json data from 4chan or, if supplied, from URL."
        (posts    (map-elt (4g--fetch-json url) :posts))
        (posts    (4g--add-backlinks posts (4g--find-backlinks posts)))
        (op       (seq-first posts))
-       (headline (4g--op->org op))
+       (headline (4g--op->org op :swap t))
        (replyfun (apply-partially #'4g--reply->org board))
        (replies  (mapconcat replyfun posts "\n\n** "))
        (lweb     (format "[[%s][Web]]" web-url))
