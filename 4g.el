@@ -1,12 +1,13 @@
-;;; 4g.el --- Browse image boards in Org-Mode  -*- lexical-binding: t; -*-
+;;; 4g.el --- Browse imageboards in Org-Mode -*- lexical-binding: t; -*-
 
 ;; Version: 0.8.3
 ;; URL: https://github.com/eNotchy/4g
 ;; Package-Requires: ((emacs "30.1"))
 ;; Keywords: comm extensions hypermedia org
 ;; SPDX-License-Identifier: GPL-3.0
-;; 
+;;
 ;; This file is NOT part of GNU Emacs.
+;;
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation, either version 3 of the
