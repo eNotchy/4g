@@ -58,8 +58,9 @@
 (defvar 4g--boards nil
   "Cache for parsed data from 4chan's boards.json API endpoint.")
 
-(defvar 4g--catalogs (make-hash-table :test 'eq)
-  "Cache for parsed data from 4chan's catalog.json API endpoints.")
+(defvar 4g--catalogs (make-hash-table :test 'equal)
+  "Cache for parsed data from 4chan's catalog.json API endpoints.
+Uses Board names (strings) as keys, returns a list of threads.")
 
 ;;; --- Global Constants -------------------------------------------------------
 
@@ -509,6 +510,17 @@ CALLBACK takes no arguments."
                (map-let (:board :title) b
                  (cons board title))))
     (4g--picker "board: ")))
+
+(defun 4g--prompt-thread (board)
+  (thread-last
+    (map-elt 4g--catalogs board)
+    (seq-map (lambda (thd)
+               (format "%s %s"
+                       (map-elt thd :no)
+                       (4g--thread-title thd))))
+    (completing-read "thread: ")
+    ;; Converts the number, ignores everything after it:
+    (string-to-number)))
 
 ;; The above version works well with `fido-vertical-mode' (included in Emacs 28)
 ;; If you do not use fido, you might prefer this implementation:
@@ -1242,6 +1254,8 @@ Fetch json data from 4chan or, if supplied, from URL."
          (footer   (4g--footer "4chan" board))
          (bufname  (format "*4chan /%s/ catalog*" board))
          (out      (get-buffer-create bufname)))
+    ;; Used by 4g-thread for completions:
+    (map-put! 4g--catalogs board threads)
     (with-current-buffer out
       (erase-buffer)
       (when (and 4g-directory (display-graphic-p))
@@ -1279,7 +1293,7 @@ Fetch json data from 4chan or, if supplied, from URL."
   (interactive)
   (when-let*
       ((board    (or board (4g--prompt-board)))
-       (no       (or no (read-string "Thread number: "))) ;TODO offer completions
+       (no       (or no (4g--prompt-thread board)))
        (url      (or url (format "%s/%s/thread/%s.json" 4g--4chan-acdn board no)))
        (web-url  (format "https://boards.4chan.org/%s/thread/%s" board no))
        (posts    (map-elt (4g--fetch-json url) :posts))

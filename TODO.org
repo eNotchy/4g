@@ -2,11 +2,11 @@
 
 /This file looks better in Emacs or raw than on Github./
 
-* Road to 1.0 [21/22]
-** [ ] Generate thread completions for ~4g-thread~ [1/4]
-*** [ ] cache catalogs 
-*** [ ] store in hash-table 4g--catalogs
-*** [ ] Make thread completions searchable by title
+* Road to 1.0 [1/2]
+** [X] Generate thread completions for ~4g-thread~ [4/4]
+*** [X] cache catalogs 
+*** [X] store in hash-table 4g--catalogs
+*** [X] Make thread completions searchable by title
 *** [X] Add threadno to (duplicate) thread titles to disambiguate
 ** [ ] Finalize 4g:, 4g-open: and 4g-download: link types [1/6]
 https://orgmode.org/manual/Adding-Hyperlink-Types.html
