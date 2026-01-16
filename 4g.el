@@ -653,6 +653,9 @@ to deliver org-protocol URLs)."
   (require 'server)
   (unless (and (fboundp 'server-running-p)
                (server-running-p))
+    ;; REVIEW I do not use Windows and have not tested this
+    (when (eq 'windows-nt system-type)
+      (setopt server-use-tcp t))
     (server-start))
   ;; Register the org-protocol handler.
   (require 'org-protocol)
