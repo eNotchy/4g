@@ -3,7 +3,7 @@
 #+PROPERTY: header-args :results silent
 # NOTE: If you edit this file, write one sentence per line, unless formatting makes it necessary to diverge from this rule.
 
-4g (pronounced either like =fourg= or =for /g/= depending on your preference) lets you read image and discussion boards as Org documents in Emacs.
+4g (pronounced like =fourg= or =for /g/=, depending on your preference) lets you read image and discussion boards as Org documents in Emacs.
 Currently, only 4chan is supported.
 Support for 4chan archives and other websites is [[./TODO.org][planned]].
 
@@ -128,6 +128,49 @@ Files are sorted by board and given their original filename plus a 4-character h
 The =4chan= bit may seem superfluous at the moment, but opens up the opportunity to add support for other websites to 4g. 
 
 *Please note that the format of the 4g-download and 4g-open link types is subject to change until 4g has reached version 1.0.*
+** Org-protocol: open 4g from your web browser
+
+This feature requires some setup beforehand.
+Once that setup is done, when you're visiting a 4chan board or thread in your browser, you can just click a bookmark and Emacs will open the same thread or catalog in 4g.
+
+*** Emacs setup
+Add this command to your Emacs init:
+
+#+begin_src elisp
+(4g-org-protocol-setup)
+#+end_src
+
+Note that this command will (among other things) ensure that an Emacs server is running.
+
+(if /autoloads/ don't work properly in your installation, try adding the line ~(require '4g)~ beforehand) 
+
+*** Browser bookmarklet
+
+Create a new bookmark in your browser (the name does not matter) and set its URL to:
+
+#+begin_src javascript
+javascript:location.href='org-protocol://4g?' + new URLSearchParams({url: window.location.href});
+#+end_src
+
+This sends the current page URL to Emacs as ~org-protocol://4g?url=...~ (properly encoded).
+To set the URL manually, you may have to open a bookmark manager, hidden deep inside the treacherous menus of modern browsers.
+
+*** OS integration
+
+On modern Linux distros with GNU Emacs 30+ installed, Org-Protocol should work out of the box.
+
+If it doesn't, or if you're on a different OS, consult [[https://sachachua.com/blog/2015/11/capturing-links-quickly-with-emacsclient-org-protocol-and-chrome-shortcut-manager-on-microsoft-windows-8/][Sacha Chua's article on the topic]] and the references she links to.
+
+*** Calling 4g from other programs
+
+You can open 4g with a 4chan URL from the command line or other programs, but take care that the URL needs to be percent-encoded.
+
+This should open the catalog of =/an/=:
+#+begin_src shell
+emacsclient -a "" "org-protocol://4g?url=https%3A%2F%2Fboards.4chan.org%2Fan%2Fcatalog"
+#+end_src
+
+The =-a ""= bit means that an Emacs server will be started if one is not already running. 
 ** Minor mode
 4g defines the minor mode ~4g-mode~ with a corresponding keymap and menu entry.
 This means you can install hooks that run whenever 4g-mode is activated.
