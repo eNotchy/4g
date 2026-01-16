@@ -31,6 +31,7 @@
 ;;; --- Dependencies -----------------------------------------------------------
 
 (require 'url)
+(require 'url-parse)
 (require 'json)
 (require 'subr-x)
 (require 'seq)
@@ -542,7 +543,7 @@ CALLBACK takes no arguments."
 ;;     (map-pairs)
 ;;     (4g--picker "board: ")))
 
-;;; --- Org protocol -----------------------------------------------------------
+;;; --- Org Link Types ---------------------------------------------------------
 
 (defun 4g--crosslink (board thread no)
   (4g-thread board thread :parent (current-buffer))
@@ -585,6 +586,82 @@ CALLBACK takes no arguments."
 (org-link-set-parameters "4g"          :follow #'4g-follow-link)
 (org-link-set-parameters "4g-open"     :follow #'4g--follow-open-link)
 (org-link-set-parameters "4g-download" :follow #'4g--follow-download-link)
+
+;;; --- Org-Protocol (browser -> 4g) -------------------------------------------
+
+(defun 4g--parse-4chan-url (url)
+  "Parse a 4chan URL and return a plist describing what to open.
+Returns a plist like:
+  (:kind thread  :board \"g\" :threadno \"123\" :postno \"456\")
+or
+  (:kind catalog :board \"g\")
+or nil if URL is not recognized."
+  (unless (stringp url)
+    (signal 'wrong-type-argument (list 'stringp url)))
+  (unless (string-prefix-p "http" url)
+    (signal 'error (list "String URL must be a URL" url)))
+  (let* ((u    (url-generic-parse-url url))
+         (host (url-host u))
+         (path (url-filename u))
+         (frag (url-target u))) ;; fragment without '#'
+    ;; REVIEW dispatch based on hostname to support other sites
+    (unless (equal host "boards.4chan.org")
+      (signal 'error (list "Unknown host" host)))
+    (seq-let (board kind threadno) (split-string path "/" t)
+      (cond
+       ;; Not on any board
+       ((string-empty-p board) (4g-board-list))
+       ;; /<board>/thread/<threadno>...
+       ((and threadno (string= kind "thread"))
+        (list :kind   'thread
+              :board  board
+              :threadno threadno
+              ;; Evaluates to nil if frag is nil:
+              :postno (string-remove-prefix "p" frag)))
+       ;; /<board>/catalog
+       ((string= kind "catalog")
+        (list :kind 'catalog :board board))
+       ;; /<board>/ (treat as catalog)
+       (t
+        (list :kind 'catalog :board board))))))
+
+(defun 4g-org-protocol-open (info)
+  "Org-protocol handler: open a 4chan URL in 4g.
+INFO is a plist passed by org-protocol, e.g. (:url \"...\")."
+  (map-let (:url :link :ref) info
+    (setq url (or url link ref))
+    (unless (stringp url)
+      (user-error "org-protocol 4g: missing required parameter: url"))
+    (map-let (:kind :board :threadno :postno) (4g--parse-4chan-url url)
+      (pcase kind
+        ('catalog
+         (4g-catalog board))
+        ('thread
+         (if postno
+             (4g--crosslink board threadno postno)
+           (4g-thread board threadno)))
+        (_
+         (user-error "org-protocol 4g: unsupported URL: %s" url))))))
+
+;;;###autoload
+(defun 4g-org-protocol-setup ()
+  "Register the org-protocol handler `org-protocol://4g?url=...` for 4g.
+This also ensures an Emacs server is running (needed for emacsclient
+to deliver org-protocol URLs)."
+  (interactive)
+  ;; Ensure emacsclient has a server to talk to.
+  (require 'server)
+  (unless (and (fboundp 'server-running-p)
+               (server-running-p))
+    (server-start))
+  ;; Register the org-protocol handler.
+  (require 'org-protocol)
+  (and (boundp 'org-protocol-protocol-alist) ;; keeps flycheck happy
+       (add-to-list 'org-protocol-protocol-alist
+                    '("4g"
+                      :protocol "4g"
+                      :function 4g-org-protocol-open
+                      :kill-client t))))
 
 ;;; --- Text Processing (Regex-based) ------------------------------------------
 
