@@ -167,7 +167,7 @@ You can open 4g with a 4chan URL from the command line or other programs, but ta
 
 This should open the catalog of =/an/=:
 #+begin_src shell
-emacsclient -a "" "org-protocol://4g?url=https%3A%2F%2Fboards.4chan.org%2Fan%2Fcatalog"
+emacsclient -n -c -a "" -- "org-protocol://4g?url=https%3A%2F%2Fboards.4chan.org%2Fan%2Fcatalog"
 #+end_src
 
 The =-a ""= bit means that an Emacs server will be started if one is not already running. 
