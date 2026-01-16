@@ -1107,8 +1107,7 @@ From catalogs, this is called with a BOARD arg. From threads, without."
            (space (if (numberp align-to)
                       (propertize " " 'display `(space :align-to ,align-to))
                     " "))
-           (stats (format "[%c%3s R %3s I]%s%s%s"
-                          (char-from-name "ZERO WIDTH SPACE")
+           (stats (format "[%4s R %3s I]%s%s%s"
                           r-str i-str pin lock old)))
       (if flip
           (concat l-str space stats)
