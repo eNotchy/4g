@@ -549,7 +549,7 @@ CALLBACK takes no arguments."
   (org-link-open-from-string (format "[[%s]]" no))
   (recenter))
 
-(defun 4g--follow-link (url _)
+(defun 4g-follow-link (url _)
   (seq-let (site board thread post) (string-split url "/")
     (cond
      ((string= site "4chan")
@@ -582,7 +582,7 @@ CALLBACK takes no arguments."
                                        (4g--decide-download-dir ext)))))
           (4g--download-file-async src dest))))))
 
-(org-link-set-parameters "4g"          :follow #'4g--follow-link)
+(org-link-set-parameters "4g"          :follow #'4g-follow-link)
 (org-link-set-parameters "4g-open"     :follow #'4g--follow-open-link)
 (org-link-set-parameters "4g-download" :follow #'4g--follow-download-link)
 

@@ -182,7 +182,9 @@ Open ~M-x customize-group RET 4g~ to explore them, or check the headings =User O
    ;; Open videos in mpv and loop each video endlessly
    4g-videolink-command (list "mpv" "--loop")
    ;; Prompt for a directory every time you download a file other than a video or image:
-   4g-fallback-download-directory nil)) 
+   4g-fallback-download-directory nil)
+  ;; 4g links push to org-mark-ring (so you can go back using org-mark-ring-goto)
+  (advice-add '4g-follow-link :before (lambda (&rest _) (org-mark-ring-push))))
 #+end_src
 
 ** Options
