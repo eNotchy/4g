@@ -1173,6 +1173,8 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
   "n"   #'next-error
   "N"   #'previous-error
   "/"   #'org-occur
+  "'"   #'org-mark-ring-goto
+  "m"   #'org-mark-ring-push
   "g g" #'beginning-of-buffer
   "G"   #'end-of-buffer
   "?"   #'4g-qnav-help)
@@ -1199,6 +1201,8 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
   "<mouse-8>" (cons "Go to Parent buffer" #'4g-goto-parent)
   "<mouse-9>" #'4g-mouse-cycle
   "<mouse-10>" 4g-prefix-map
+  "C-<mouse-8>" #'org-mark-ring-goto
+  "C-<mouse-9>" #'org-mark-ring-push
   :menu '("4g"
           ["QuickNav (this buffer)" 4g-quicknav-mode
            :style toggle
