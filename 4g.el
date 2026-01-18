@@ -631,7 +631,7 @@ INFO is a plist passed by org-protocol, e.g. (:url \"...\")."
   (map-let (:url :link :ref) info
     (setq url (or url link ref))
     (unless (stringp url)
-      (user-error "org-protocol 4g: missing required parameter: url"))
+      (user-error "Org-protocol 4g: missing required parameter: url"))
     (map-let (:kind :board :threadno :postno) (4g--parse-4chan-url url)
       (pcase kind
         ('catalog
@@ -641,7 +641,7 @@ INFO is a plist passed by org-protocol, e.g. (:url \"...\")."
              (4g--crosslink board threadno postno)
            (4g-thread board threadno)))
         (_
-         (user-error "org-protocol 4g: unsupported URL: %s" url))))))
+         (user-error "Org-protocol 4g: unsupported URL: %s" url))))))
 
 ;;;###autoload
 (defun 4g-org-protocol-setup ()
@@ -1167,9 +1167,12 @@ If only SITE is supplied, return footer for the board list."
     (4g--replace-literals final 4g--html-literals)))
 
 (cl-defun 4g--op->org (thd &key board flip align-to)
-  "Format the OP heading for a thread THD like: \"Title [R: x / I: y]\".
-shows `replies' and `images' as /italics/ when limits are set.
-From catalogs, this is called with a BOARD arg. From threads, without."
+  "Format the OP heading for a thread THD.
+FLIP turns around the title and the counters,
+ALIGN-TO makes the right-hand element align to the specified column.
+Shows `replies' and `images' as /italics/ when limits are set.
+
+To create a link to the thread, call it with a BOARD arg."
   (map-let (:no :replies :images :bumplimit :imagelimit :closed :sticky :archived) thd
     (let* ((title (4g--thread-title thd))
            (l-str  (if board
