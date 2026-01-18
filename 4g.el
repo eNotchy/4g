@@ -610,7 +610,7 @@ or nil if URL is not recognized."
     (seq-let (board kind threadno) (split-string path "/" t)
       (cond
        ;; Not on any board
-       ((string-empty-p board) (4g-board-list))
+       ((null board) (list :kind 'site))
        ;; /<board>/thread/<threadno>...
        ((and threadno (string= kind "thread"))
         (list :kind   'thread
@@ -634,8 +634,8 @@ INFO is a plist passed by org-protocol, e.g. (:url \"...\")."
       (user-error "Org-protocol 4g: missing required parameter: url"))
     (map-let (:kind :board :threadno :postno) (4g--parse-4chan-url url)
       (pcase kind
-        ('catalog
-         (4g-catalog board))
+        ('site (4g-board-list))
+        ('catalog (4g-catalog board))
         ('thread
          (if postno
              (4g--crosslink board threadno postno)

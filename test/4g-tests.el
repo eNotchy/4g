@@ -41,7 +41,7 @@
   (should (equal "🇺🇸" (4g--emojify-country-code "US")))
   (should (equal "🇬🇧" (4g--emojify-country-code "GB"))))
 
-(ert-deftest 4g--orgification-quote-links ()
+(ert-deftest 4g-test-quote-link-orgification ()
   (should
    (equal
     "[[107164637][>>107164637]]\nMay I ask why monke sad?"
@@ -81,7 +81,9 @@
   (should (equal '(:kind catalog :board "g")
                  (4g--parse-4chan-url "https://boards.4chan.org/g/catalog")))
   (should (equal '(:kind catalog :board "g")
-                 (4g--parse-4chan-url "https://boards.4chan.org/g/"))))
+                 (4g--parse-4chan-url "https://boards.4chan.org/g/")))
+  (should (equal '(:kind site)
+                 (4g--parse-4chan-url "https://boards.4chan.org/"))))
 
 (provide '4g-tests)
 
