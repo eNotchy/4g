@@ -1,4 +1,4 @@
-;;; 4g-tests.el --- Tests for 4g   -*- lexical-binding: t;  coding:utf-8 -*-
+;;; 4g-tests.el --- Tests for 4g -*- lexical-binding: t;  coding:utf-8 -*-
 ;;
 ;; Version: 0.8.1
 ;; URL: https://github.com/eNotchy/4g
@@ -36,11 +36,7 @@
           (4g-image-download-directory nil))
       (4g--gen-download-link "g" 4g--filetestpost)))))
 
-(let ((4g--sitename "4chan")
-      (4g-image-download-directory nil))
-  (4g--gen-download-link "g" 4g--filetestpost))
-
-(ert-deftest 4g--country-emojification ()
+(ert-deftest 4g-test-country-emojification ()
   (should (equal nil (4g--emojify-country-code "asdf")))
   (should (equal "🇺🇸" (4g--emojify-country-code "US")))
   (should (equal "🇬🇧" (4g--emojify-country-code "GB"))))
@@ -52,9 +48,7 @@
     (4g--orgify-com
      "<a href=\"#p107164637\" class=\"quotelink\">&gt;&gt;107164637</a><br>May I ask why monke sad?"))))
 
-(ert-deftest 4g--regexps ())
-
-(ert-deftest 4g-filepath-generation ()
+(ert-deftest 4g-test-filepath-generation ()
     (should
      (string= "thumbnails/K/KKKK________safdsdf12w==.jpg"
               (4g--thumbnail-file "KKKK////////safdsdf123==")))
@@ -78,6 +72,16 @@
         "g"
         (list :md5 "KKKKx////////safdsdf12w=="
               :tim 1234)))))
+
+(ert-deftest 4g-test-url-parsing ()
+  (should (equal '(:kind thread :board "g" :threadno "123" :postno "456")
+                 (4g--parse-4chan-url "https://boards.4chan.org/g/thread/123#p456")))
+  (should (equal '(:kind thread :board "g" :threadno "123" :postno nil)
+                 (4g--parse-4chan-url "https://boards.4chan.org/g/thread/123")))
+  (should (equal '(:kind catalog :board "g")
+                 (4g--parse-4chan-url "https://boards.4chan.org/g/catalog")))
+  (should (equal '(:kind catalog :board "g")
+                 (4g--parse-4chan-url "https://boards.4chan.org/g/"))))
 
 (provide '4g-tests)
 
