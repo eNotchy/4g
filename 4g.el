@@ -90,8 +90,7 @@ Uses Board names (strings) as keys, returns a list of threads.")
 (defun 4g--keyword-name (kw)
   "Return KW's name without the leading colon, or signal if not a keyword."
   (declare (pure t) (side-effect-free t))
-  (unless (keywordp kw)
-    (signal 'wrong-type-argument (list 'keywordp kw)))
+  (cl-check-type kw (satisfies keywordp))
   (substring (symbol-name kw) 1))
 
 (defun 4g--sanitize-md5 (base64-hash)
@@ -387,15 +386,15 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
 
 (defun 4g--download-new (url dest)
   "Download URL if DEST doesn't exist.  Return DEST on success, nil on failure."
-  (unless (and (stringp url) (stringp dest))
-    (signal 'wrong-type-argument (list 'stringp url 'stringp dest)))
+  (cl-check-type url string)
+  (cl-check-type dest string)
   (if (file-exists-p dest)
       :already-exists
     (4g--download-file-sync url dest)))
 
 ;;; --- Thumbnail download -----------------------------------------------------
 
-(cl-defun 4g--thumbnail-file (MD5)
+(defun 4g--thumbnail-file (MD5)
   "Return the relative path from `4g-directory' to the thumbnail of MD5."
   (let* ((sanitized (4g--sanitize-md5 MD5))
          ;; Having too many files in a folder can severely impact performance,
@@ -404,7 +403,7 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
          (filename  (concat sanitized ".jpg")))
     (file-name-concat "thumbnails" prefix filename)))
 
-(cl-defun 4g--get-thumbnail-url+path (board post)
+(defun 4g--get-thumbnail-url+path (board post)
   (when-let*
       (4g-directory
        (tim (map-elt post :tim))
@@ -545,8 +544,7 @@ CALLBACK takes no arguments."
 
 ;;; --- Org Link Types ---------------------------------------------------------
 
-(defun 4g--crosslink (board thread no)
-  (4g-thread board thread :parent (current-buffer))
+(defun 4g--goto-post (no)
   (org-link-open-from-string (format "[[%s]]" no))
   (recenter))
 
@@ -555,10 +553,9 @@ CALLBACK takes no arguments."
     (cond
      ((string= site "4chan")
       (cond
-       (post   (4g--crosslink board thread post))
-       (thread (4g-thread board thread :parent (current-buffer)))
+       (thread (4g-thread board thread :postno post :parent (current-buffer)))
        (board  (4g-catalog board :parent (current-buffer)))
-       ((4g-board-list :parent (current-buffer)))))
+       (t      (4g-board-list :parent (current-buffer)))))
      ((user-error "Unknown 4g site: %s" url)))))
 
 (defun 4g--follow-open-link (url _)
@@ -596,17 +593,14 @@ Returns a plist like:
 or
   (:kind catalog :board \"g\")
 or nil if URL is not recognized."
-  (unless (stringp url)
-    (signal 'wrong-type-argument (list 'stringp url)))
-  (unless (string-prefix-p "http" url)
-    (signal 'error (list "String URL must be a URL" url)))
+  (cl-check-type url string)
+  (cl-assert (string-prefix-p "http" url) t)
   (let* ((u    (url-generic-parse-url url))
          (host (url-host u))
          (path (url-filename u))
          (frag (url-target u))) ;; fragment without '#'
     ;; REVIEW dispatch based on hostname to support other sites
-    (unless (equal host "boards.4chan.org")
-      (signal 'error (list "Unknown host" host)))
+    (cl-assert (equal host "boards.4chan.org") t "Unknown host")
     (seq-let (board kind threadno) (split-string path "/" t)
       (cond
        ;; Not on any board
@@ -630,18 +624,13 @@ or nil if URL is not recognized."
 INFO is a plist passed by org-protocol, e.g. (:url \"...\")."
   (map-let (:url :link :ref) info
     (setq url (or url link ref))
-    (unless (stringp url)
-      (user-error "Org-protocol 4g: missing required parameter: url"))
+    (cl-assert (stringp url) t "Org-protocol 4g: missing required parameter: url")
     (map-let (:kind :board :threadno :postno) (4g--parse-4chan-url url)
       (pcase kind
-        ('site (4g-board-list))
+        ('site    (4g-board-list))
         ('catalog (4g-catalog board))
-        ('thread
-         (if postno
-             (4g--crosslink board threadno postno)
-           (4g-thread board threadno)))
-        (_
-         (user-error "Org-protocol 4g: unsupported URL: %s" url))))))
+        ('thread  (4g-thread board threadno :postno postno))
+        (_        (user-error "Org-protocol 4g: unsupported URL: %s" url))))))
 
 ;;;###autoload
 (defun 4g-org-protocol-setup ()
@@ -659,12 +648,12 @@ to deliver org-protocol URLs)."
     (server-start))
   ;; Register the org-protocol handler.
   (require 'org-protocol)
-  (and (boundp 'org-protocol-protocol-alist) ;; keeps flycheck happy
-       (add-to-list 'org-protocol-protocol-alist
-                    '("4g"
-                      :protocol "4g"
-                      :function 4g-org-protocol-open
-                      :kill-client t))))
+  (when (boundp 'org-protocol-protocol-alist) ;; keeps flycheck happy
+    (add-to-list 'org-protocol-protocol-alist
+                 '("4g"
+                   :protocol "4g"
+                   :function 4g-org-protocol-open
+                   :kill-client t))))
 
 ;;; --- Text Processing (Regex-based) ------------------------------------------
 
@@ -676,8 +665,7 @@ Returns nil if CODE is not 2 characters long or not between A and Z.
 Implementation detail: each A–Z maps to Regional Indicator Symbols
 U+1F1E6..U+1F1FF, which, when paired, render as a flag emoji."
   (declare (pure t) (side-effect-free t))
-  (unless (and country (stringp country))
-    (signal 'wrong-type-argument (list 'stringp country)))
+  (cl-check-type country string)
   (let ((code (upcase (string-trim country))))
     (when (= (length code) 2)
         (let* ((a (aref code 0)) (b (aref code 1))
@@ -777,8 +765,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defun 4g--orgify-com-regex (com)
   "Convert board-style HTML comment COM into Org markup."
-  (unless (and com (stringp com))
-    (signal 'wrong-type-argument (list 'stringp com)))
+  (cl-check-type com string t)
   ;; --- order matters! ---
   (thread-first com
     (4g--replace-regexes
@@ -1062,7 +1049,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 ;;; --- Footer -----------------------------------------------------------------
 
-(cl-defun 4g--footer (site &optional board threadno)
+(defun 4g--footer (site &optional board threadno)
   "Return a string to be inserted at the very bottom of all 4g buffers.
 Supplying THREADNO implies that the footer is for a thread,
 BOARD implies a catalog.
@@ -1113,7 +1100,7 @@ If only SITE is supplied, return footer for the board list."
        (seq-filter #'stringp)
        (string-join)))))
 
-(cl-defun 4g--image-link (board post)
+(defun 4g--image-link (board post)
   "Return an Org link to the image attached in POST from BOARD."
   (map-let (:tim :filename :ext :md5 :spoiler) post
     (when (and tim filename ext md5)
@@ -1133,7 +1120,7 @@ If only SITE is supplied, return footer for the board list."
                            ;; TODO show a spoiler.svg instead of nothing
                     (format "\n[[./%s]]" thumb)))))))
 
-(cl-defun 4g--reply->org (board post)
+(defun 4g--reply->org (board post)
   "Format one POST on BOARD to Org text."
   (map-let (:name :id :time :no :com :country :trip :capcode :board_flag
             :filedeleted :backlinks :now (:ext file-attached)) post
@@ -1373,7 +1360,7 @@ Fetch json data from 4chan or, if supplied, from URL."
     out))
 
 ;;;###autoload
-(cl-defun 4g-thread (&optional board no &key url parent)
+(cl-defun 4g-thread (&optional board no &key url parent postno)
   "Prompt for a 4chan thread's BOARD and NO and build an Org buffer from it.
 PARENT implies that the catalog was linked to from another buffer.
 Fetch json data from 4chan or, if supplied, from URL."
@@ -1419,6 +1406,8 @@ Fetch json data from 4chan or, if supplied, from URL."
       (goto-char (point-min))
       (org-mode))
     (switch-to-buffer out)
+    (when postno
+      (4g--goto-post postno))
     ;; Needed for 4g-refresh and 4g-goto-parent:
     (setq-local 4g--boardname board
                 4g--threadno  no
