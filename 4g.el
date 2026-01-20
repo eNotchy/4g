@@ -1028,7 +1028,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
                    (4g--find-all-matches com 4g--rx-quotelink-inpage :group 1)
                    (seq-map #'string-to-number)
                    (seq-uniq)
-                   (seq-map (lambda (linkee) (cons linkee (list no))))))))
+                   (seq-map (lambda (linkee) (list linkee no)))))))
     (apply #'map-merge-with 'hash-table #'append)))
 
 (defun 4g--add-backlinks (posts backlinks)
