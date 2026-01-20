@@ -710,7 +710,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defconst 4g--rx-code-with-lang
   (rx "<pre" (+ space) "class=\"prettyprint\">"
-      (or (+ (not alphabetic)) "rem" "REM")
+      (or (* (not alphabetic)) "rem" "REM")
       (* whitespace) "lang:" (* whitespace) (group (+ alphabetic) "<br>")
       (group (*? printing))
       "</pre>")
@@ -808,7 +808,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defconst 4g--rx-code-lang
   (rx string-start
-      (or (+ (not alphabetic)) "rem" "REM")
+      (or (* (not alphabetic)) "rem" "REM")
       (* whitespace) "lang:" (* whitespace) (group (+ alphanumeric)))
   "Match a lang declaration in a code block, capturing the language.")
 
