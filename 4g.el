@@ -470,8 +470,8 @@ CALLBACK takes no arguments."
       (concat "." (string-limit (4g--sanitize-md5 md5) 4))
       (concat ext))))
 
-(defun 4g--decide-download-dir (ext)
-  (pcase (map-elt 4g--media-types ext)
+(defun 4g--decide-download-dir (filename)
+  (pcase (map-elt 4g--media-types (url-file-extension filename))
     (:video 4g-video-download-directory)
     (:image 4g-image-download-directory)
     (_      4g-fallback-download-directory)))
@@ -479,7 +479,7 @@ CALLBACK takes no arguments."
 (cl-defun 4g--gen-download-link
     (board post &key (site 4g--sitename))
   (map-let (:ext :tim :fsize) post
-    (let* ((id   (format "%s/%s/%s/%s" site board tim ext))
+    (let* ((id   (format "%s/%s/%s%s" site board tim ext))
            (dir  (4g--decide-download-dir ext))
            (dest (when dir
                    (thread-last post
@@ -489,6 +489,7 @@ CALLBACK takes no arguments."
                      (file-name-concat dir)
                      (expand-file-name)
                      (concat "::"))))
+           ;; when dest is nil, 4g prompts for the download location
            (link (concat "4g-download:" id dest))
            (size (file-size-human-readable-iec (or fsize 0))))
       (format "[[%s][Download (%s)]]" link size))))
