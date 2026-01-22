@@ -338,7 +338,7 @@ This function is WIP."
   "Retrieve URL and parse JSON.
 Return objects as PLISTs and arrays as LISTs.  Error on failure."
   (message "Fetching %s..." url)
-  (let ((buf (url-retrieve-synchronously url t t 10)))
+  (let ((buf (url-retrieve-synchronously url 'silent 'inhibit-cookies 10)))
     (unless buf
       (error "Failed to fetch %s" url))
     (unwind-protect
@@ -373,7 +373,7 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
   (url-retrieve url #'4g--download-callback (list dest) nil t))
 
 (defun 4g--download-file-sync (url dest)
-  (let ((buf (url-retrieve-synchronously url t t 30)))
+  (let ((buf (url-retrieve-synchronously url 'silent 'inhibit-cookies 30)))
     (unless buf
       (error "Failed to fetch %s" url))
     (unwind-protect
@@ -560,26 +560,22 @@ CALLBACK takes no arguments."
      ((user-error "Unknown 4g site: %s" url)))))
 
 (defun 4g--follow-open-link (url _)
-  (seq-let (_site board tim ext) (string-split url "/")
-    (let ((src        (format "%s/%s/%s%s" 4g--4chan-icdn board tim ext))
-          (media-type (map-elt 4g--media-types ext)))
+  (seq-let (_site board file) (string-split url "/" 'omit-nulls)
+    (let* ((src        (format "%s/%s/%s" 4g--4chan-icdn board file))
+           (ext        (url-file-extension file))
+           (media-type (map-elt 4g--media-types ext)))
       (pcase media-type
-        (:video (4g--play-video src))
+        (:video                                   (4g--play-video src))
         ((and :image (guard (display-graphic-p))) (eww-browse-url src))
-        (_ (4g--browse-url src))))))
+        (_                                        (4g--browse-url src))))))
 
 (defun 4g--follow-download-link (link _)
-  (seq-let (url &rest destlist) (string-split link "::")
-    (seq-let (_site board tim ext) (string-split url "/")
-      (if (not (and board tim ext))
-          (error "Invalid 4g-download link: %s" link)
-        (let* ((filename (concat tim ext))
-               (src (format "%s/%s/%s" 4g--4chan-icdn board filename))
-               (dest (if destlist
-                         (string-join destlist "::")
-                       (read-file-name "Save file as: "
-                                       (4g--decide-download-dir ext)))))
-          (4g--download-file-async src dest))))))
+  (seq-let (url dest) (string-split link "::" 'omit-nulls)
+    (let ((src  (concat 4g--4chan-icdn (string-remove-prefix "4chan" url)))
+          (dest (or dest
+                    (read-file-name "Save file as: "
+                                    (4g--decide-download-dir url)))))
+      (4g--download-file-async src dest))))
 
 (org-link-set-parameters "4g"          :follow #'4g-follow-link)
 (org-link-set-parameters "4g-open"     :follow #'4g--follow-open-link)
@@ -1110,7 +1106,7 @@ If only SITE is supplied, return footer for the board list."
                          (concat "SPOILER" ext)
                        (concat filename ext))) ;; REVIEW sanitization required?
            (thumb    (4g--thumbnail-file md5))
-           (id       (format "4chan/%s/%s/%s" board tim ext))
+           (id       (format "4chan/%s/%s%s" board tim ext))
            (flink    (format "4g-open:%s" id))
            (filelink (org-link-make-string flink fname))
            (dl-link  (4g--gen-download-link board post)))
@@ -1187,7 +1183,7 @@ To create a link to the thread, call it with a BOARD arg."
 (defun 4g--catalog-thread->org (board thd)
   "Return a string for one thread THD on BOARD.
 Includes an OP line as a ** heading and its last_replies as *** headings."
-  (let* ((op-line  (4g--op->org thd :board board))
+  (let* ((op-line  (4g--op->org thd :board board :align-to 19))
          (op-reply (4g--reply->org board thd))
          (replystr (when-let ((replies (map-elt thd :last_replies))
                               (replyfn (apply-partially #'4g--reply->org board)))

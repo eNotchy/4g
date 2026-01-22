@@ -31,7 +31,7 @@
     (4g--gen-filename 4g--filetestpost)))
   (should
    (equal
-    "[[4g-download:4chan/g/1765995360846053/.jpg][Download (48 KiB)]]"
+    "[[4g-download:4chan/g/1765995360846053.jpg][Download (48 KiB)]]"
     (let ((4g--sitename "4chan")
           (4g-image-download-directory nil))
       (4g--gen-download-link "g" 4g--filetestpost)))))
