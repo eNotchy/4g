@@ -362,7 +362,7 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
 (defun 4g--download-callback (status dest)
   (if-let (err (plist-get status :error))
       (error "Failed to download %s: %s" dest err)
-    (make-directory (file-name-directory dest) t)
+    (make-directory (file-name-directory dest) 'parents)
     (goto-char (point-min))
     (re-search-forward "\r?\n\r?\n")
     (let ((coding-system-for-write 'no-conversion))
@@ -370,7 +370,7 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
     dest))
 
 (defun 4g--download-file-async (url dest)
-  (url-retrieve url #'4g--download-callback (list dest) nil t))
+  (url-retrieve url #'4g--download-callback (list dest) nil 'inhibit-cookies))
 
 (defun 4g--download-file-sync (url dest)
   (let ((buf (url-retrieve-synchronously url 'silent 'inhibit-cookies 30)))
@@ -463,10 +463,11 @@ CALLBACK takes no arguments."
 
 (defun 4g--gen-filename (post)
   (map-let (:filename :ext :md5) post
+    (cl-assert (and filename ext md5) t)
     (thread-first (string-replace " " "_" filename)
       ;; Filenames can be 255 bytes. Subtract 10 for the extension and hash
       (string-limit 245 nil 'utf-8)
-      (decode-coding-string 'utf-8 t)
+      (decode-coding-string 'utf-8 'nocopy)
       (concat "." (string-limit (4g--sanitize-md5 md5) 4))
       (concat ext))))
 
@@ -598,7 +599,7 @@ or nil if URL is not recognized."
          (frag (url-target u))) ;; fragment without '#'
     ;; REVIEW dispatch based on hostname to support other sites
     (cl-assert (equal host "boards.4chan.org") t "Unknown host")
-    (seq-let (board kind threadno) (split-string path "/" t)
+    (seq-let (board kind threadno) (split-string path "/" 'omit-nulls)
       (cond
        ;; Not on any board
        ((null board) (list :kind 'site))
@@ -751,7 +752,8 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
       "#+begin_quote"))
 
 (defun 4g--replace-regexes (text pairs)
-  (seq-reduce (lambda (s p) (replace-regexp-in-string (car p) (cdr p) s t))
+  (seq-reduce (lambda (s p)
+                (replace-regexp-in-string (car p) (cdr p) s 'fixedcase))
               pairs
               text))
 
@@ -762,7 +764,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defun 4g--orgify-com-regex (com)
   "Convert board-style HTML comment COM into Org markup."
-  (cl-check-type com string t)
+  (cl-check-type com string)
   ;; --- order matters! ---
   (thread-first com
     (4g--replace-regexes
@@ -1253,7 +1255,8 @@ Includes an OP line as a ** heading and its last_replies as *** headings."
   (when 4g-quicknav-mode
     (message
      (substitute-command-keys
-      "4g quicknav enabled. Press \\[4g-qnav-help] for help, \\[4g-quicknav-mode] to disable quicknav." nil t))))
+      "4g quicknav enabled. Press \\[4g-qnav-help] for help, \\[4g-quicknav-mode] to disable quicknav."
+      nil 'include-menus))))
 
 (defun 4g--maybe-enable-quicknav ()
   "Enable quicknav in newly created 4g buffers, unless disabled."
