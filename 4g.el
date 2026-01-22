@@ -665,12 +665,13 @@ U+1F1E6..U+1F1FF, which, when paired, render as a flag emoji."
   (declare (pure t) (side-effect-free t))
   (cl-check-type country string)
   (let ((code (upcase (string-trim country))))
-    (when (= (length code) 2)
-        (let* ((a (aref code 0)) (b (aref code 1))
-               (base 127462)) ;; U+1F1E6
-          (when (and (>= a ?A) (<= a ?Z) (>= b ?A) (<= b ?Z))
-              (string (+ base (- a ?A))
-                      (+ base (- b ?A))))))))
+    (when (= 2 (length code))
+      (let ((a    (aref code 0))
+            (b    (aref code 1))
+            (base 127462)) ;; U+1F1E6
+        (when (and (<= ?A a ?Z) (<= ?A b ?Z))
+            (string (+ base (- a ?A))
+                    (+ base (- b ?A))))))))
 
 (cl-defun 4g--find-all-matches (string regexp &key (group 0) (start 0))
   "Find all matches of REGEXP in STRING and return them as a list."
