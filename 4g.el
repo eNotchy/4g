@@ -917,6 +917,8 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
     (insert "<div class=\"__frag\">"
             (or html "")
             "</div>")
+    ;; <wbr> messes up the parsing and we'd just ignore it anyway
+    (replace-regexp-in-region "<wbr>" "" (point-min) (point-max))
     (thread-first
       (libxml-parse-html-region (point-min) (point-max))
       (dom-by-class "__frag")
@@ -934,10 +936,8 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
           (cls      (dom-attr node 'class))
           (children (mapconcat #'4g--node->org (dom-children node))))
       (cond
+       ;; linebreaks
        ((eq tag 'br) "\n")
-
-       ;; <wbr> is parsed as a node with children for some reason.
-       ((eq tag 'wbr) children)
 
        ;; >greentext
        ;; TODO: merge adjacent #+quote blocks

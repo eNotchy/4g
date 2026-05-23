@@ -85,6 +85,10 @@
   (should (equal '(:kind site)
                  (4g--parse-4chan-url "https://boards.4chan.org/"))))
 
+(ert-deftest 4g-test-wbr-elimination ()
+  (should (equal '("thisshouldjustbeoneword")
+                 (4g--com->nodes "this<wbr>should<wbr>just<wbr>be<wbr>one<wbr>word"))))
+
 (provide '4g-tests)
 
 ;;; 4g-tests.el ends here
