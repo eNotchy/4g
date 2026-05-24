@@ -702,10 +702,15 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defconst 4g--simple-tags
   (map-pairs
-   '("[eqn]"  "$$"
-     "[/eqn]" "$$"
-     "<s>"    "\n:SPOILER:\n"
-     "</s>"   "\n:END:\n")))
+   '("<s>"  "\n:SPOILER:\n"
+     "</s>" "\n:END:\n")))
+
+(defconst 4g--bb-tags
+  (map-pairs
+   '("[math]"  "\\["                    ; inline equations on /sci/
+     "[/math]" "\\]"
+     "[eqn]"   "\n\\begin{equation}"    ; block equations on /sci/
+     "[/eqn]"  "\\end{equation}\n")))
 
 (defconst 4g--rx-code-with-lang
   (rx "<pre" (+ space) "class=\"prettyprint\">"
@@ -783,6 +788,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
        ;; TODO factor this out to a different function to prevent unnecessary calls
        4g--rx-adjacent-quote-block  (if (eq :quote 4g-greentext-rendering) "" "\\0"))))
     (4g--replace-literals 4g--simple-tags)
+    (4g--replace-literals 4g--bb-tags)
     (4g--replace-literals 4g--html-linebreaks)
     (4g--replace-literals 4g--html-literals)))
 
@@ -931,7 +937,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 (defun 4g--node->org (node)
   "DOM NODE -> Org string."
   (if (stringp node)
-      node
+      (4g--replace-literals node 4g--bb-tags)
     (let ((tag      (dom-tag node))
           (cls      (dom-attr node 'class))
           (children (mapconcat #'4g--node->org (dom-children node))))
@@ -1001,8 +1007,6 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
        ;; [spoiler] tags
        ((eq tag 's)
         (format "\n:SPOILER:\n%s\n:END:\n" children))
-
-       ;; TODO: /sci/ and /qst/ stuff
 
        (t children)))))
 
@@ -1368,6 +1372,8 @@ Fetch json data from 4chan or, if supplied, from URL."
   (interactive)
   (when-let*
       ((board    (or board (4g--prompt-board)))
+       ;; TODO: global and per-board map of startup directives as defcustom
+       (latex    (if (string= board "sci") " latexpreview" ""))
        (no       (or no (4g--prompt-thread board)))
        (url      (or url (format "%s/%s/thread/%s.json" 4g--4chan-acdn board no)))
        (web-url  (format "https://boards.4chan.org/%s/thread/%s" board no))
@@ -1396,7 +1402,7 @@ Fetch json data from 4chan or, if supplied, from URL."
       (erase-buffer)
       (insert
        "#+TITLE: " title
-       "\n#+STARTUP: inlineimages hidestars"
+       "\n#+STARTUP: inlineimages hidestars" latex
        "\n\n<<PROTIP>>\n"
        (4g--protip-random :thread 4g--protips)
        "\n\n"   controls " [[#footer][Bottom]]"

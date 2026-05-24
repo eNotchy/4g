@@ -89,6 +89,9 @@
   (should (equal '("thisshouldjustbeoneword")
                  (4g--com->nodes "this<wbr>should<wbr>just<wbr>be<wbr>one<wbr>word"))))
 
+(ert-deftest 4g-test-latex-tag-conversion ()
+  (should (equal "\\[x=4\\]" (4g--node->org "[math]x=4[/math]"))))
+
 (provide '4g-tests)
 
 ;;; 4g-tests.el ends here
