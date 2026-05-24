@@ -1,6 +1,6 @@
 ;;; 4g-tests.el --- Tests for 4g -*- lexical-binding: t;  coding:utf-8 -*-
 ;;
-;; Version: 0.8.1
+;; Version: 0.9.4
 ;; URL: https://github.com/eNotchy/4g
 ;; Package-Requires: ((emacs "30.1"))
 ;; Keywords: comm extensions hypermedia org

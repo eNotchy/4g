@@ -1,4 +1,5 @@
 #+TITLE: 4g
+#+STARTUP: inlineimages
 #+OPTIONS: toc:2 num:nil
 #+PROPERTY: header-args :results silent
 # NOTE: If you edit this file, write one sentence per line, unless formatting makes it necessary to diverge from this rule.
@@ -14,6 +15,7 @@ Support for 4chan archives and other websites is [[./TODO.org][planned]].
 1. Open 4g.el in Emacs
 2. Run ~M-x eval-buffer~ (i.e. press =x= while holding =Alt=, then type ~eval-buffer~ into the prompt and press =Enter=)
 3. Run ~M-x 4g-board-list~ and browse whichever board interests you.
+   [[./images/boardlist.png]]
 
 * Installation
 This repository is not on MELPA (yet), so you install it directly from GitHub.
@@ -67,6 +69,8 @@ console.log("blabla")
 [/code]
 #+end_example
 
+[[./images/codeblocks.png]]
+
 ** Keyboard navigation (Quicknav)
 ~4g-quicknav-mode~ loads a keymap with vim-style single-button shortcuts to quickly navigate 4g buffers (and Org documents in general):
 | Key   | Action                                                                                                                |
@@ -113,12 +117,30 @@ For those of you who have a fancy enough mouse at their disposal, 4g maps some c
 | <mouse-9>  | ~4g-mouse-cycle~ |
 | <mouse-10> | ~4g-prefix-map~  |
 
+[[./images/contextmenu.png]]
+
 ** Thumbnails
 Thumbnails should /just werk/, provided that ~4g-directory~ is set to a writable directory where 4g can cache them.
 Set ~4g-directory~ to =nil= if you do not want 4g to download thumbnails.
+[[./images/thumbnail.png]]
 ** Download buttons
 In every post with a file attachment you'll find a download button, which will download images to ~4g-image-download-directory~,  videos to ~4g-video-download-directory~ and other files to ~4g-fallback-download-directory~.
 Files are sorted by board and given their original filename plus a 4-character hash to prevent duplicate names.
+
+** [math] and [eqn] tags
+LaTeX content on /sci/ is rendered using org' latex preview functionality.
+In order for this to work, you'll need to install a LaTeX distribution and dvipng.
+On Ubuntu, this should do the trick:
+#+begin_src shell
+sudo apt install texlive-latex-recommended texlive-fonts-recommended texlive-plain-generic dvipng
+#+end_src
+
+The default rendering settings produce pretty small images, so you may want to increase the scale:
+#+begin_src emacs-lisp
+(setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+#+end_src
+[[./images/latex.png]]
+
 ** Org link types
 4g defines the =4g:= Org link type so that you can tell all your friends on [[https://org-social.org/][Org Social]] about the witty and intellectually stimulating discussions you're having on 4chan.
 4g links follow the schema =4g:sitename/boardname/threadnumber=, so e.g.:
