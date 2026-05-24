@@ -29,7 +29,7 @@ In Emacs, run (once):
 #+end_src
 
 *** Updating later:
-=M-x= ~package-vc-update~ =RET= ~4g~ =RET=
+=M-x= ~package-vc-upgrade~ =RET= ~4g~ =RET=
 
 ** Doom Emacs (straight.el)
 In =packages.el= inside your doom-dir:
@@ -128,7 +128,7 @@ In every post with a file attachment you'll find a download button, which will d
 Files are sorted by board and given their original filename plus a 4-character hash to prevent duplicate names.
 
 ** [math] and [eqn] tags
-LaTeX content on /sci/ is rendered using org' latex preview functionality.
+LaTeX content on /sci/ is rendered using org's latex preview functionality.
 In order for this to work, you'll need to install a LaTeX distribution and dvipng.
 On Ubuntu, this should do the trick:
 #+begin_src shell
