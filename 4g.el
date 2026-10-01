@@ -66,8 +66,8 @@ Uses Board names (strings) as keys, returns a list of threads.")
 ;;; --- Global Constants -------------------------------------------------------
 
 (defconst 4g-version
-  "0.9.4")
-  ;; (concat "DEV-" (format-time-string "%s")))
+  ;; "0.9.4")
+  (concat "DEV-" (format-time-string "%s")))
 
 (defconst 4g--media-types
   (map-pairs
@@ -89,7 +89,6 @@ Uses Board names (strings) as keys, returns a list of threads.")
 
 (defun 4g--keyword-name (kw)
   "Return KW's name without the leading colon, or signal if not a keyword."
-  (declare (pure t) (side-effect-free t))
   (cl-check-type kw (satisfies keywordp))
   (substring (symbol-name kw) 1))
 
