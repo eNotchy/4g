@@ -793,6 +793,12 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 ;;; --- Text Processing (DOM-based) --------------------------------------------
 
+(defconst 4g--rx-org-heading-start
+  ;; Org comes with org-heading-regexp, but it trims the heading's whitespace,
+  ;; which is not what we want when escaping headings inside of src blocks.
+  (rx line-start (group (+? "*")) space)
+  "Match the stars and one space of an Org heading. Put stars in group 1.")
+
 (defconst 4g--rx-quotelink-crossthread-href
   (rx string-start "/"
       (group (+? (not "/"))) ; board (group 1)
@@ -930,8 +936,12 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
       (dom-children))))
 
 (defun 4g--orgify-com-dom (html)
-  "Convert a 4chan :com HTML fragment to Org using libxml DOM."
-  (mapconcat #'4g--node->org (4g--com->nodes html)))
+  "Convert a 4chan :com HTML fragment to Org using libxml DOM. "
+  (thread-last
+    (4g--com->nodes html)
+    (mapconcat #'4g--node->org)
+    ;; Increase level of Org headings by 3 to preserve thread/catalog structure
+    (replace-regexp-in-string 4g--rx-org-heading-start "***\\1 ")))
 
 (defun 4g--node->org (node)
   "DOM NODE -> Org string."
@@ -957,11 +967,13 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
        ;; [code] blocks
        ((and (eq      tag 'pre)
              (string= cls "prettyprint"))
-        (let* ((lang (if (string-match 4g--rx-code-lang children)
-                         (match-string 1 children)
-                       (or (funcall 4g-lang-guess-function children)
-                           "elisp")))
-               (code (string-trim (replace-regexp-in-string 4g--rx-code-lang "" children))))
+        (let* ((lang    (if (string-match 4g--rx-code-lang children)
+                            (match-string 1 children)
+                          (or (funcall 4g-lang-guess-function children)
+                              "elisp")))
+               (no-lang (replace-regexp-in-string 4g--rx-code-lang "" children))
+               (escaped (replace-regexp-in-string 4g--rx-org-heading-start ",\\1 " no-lang))
+               (code    (string-trim escaped)))
           (format "\n#+begin_src %s\n%s\n#+end_src\n" lang code)))
 
        ;; Quote links: >>123 or >>>/g/123
