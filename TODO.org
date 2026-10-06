@@ -22,8 +22,8 @@ https://orgmode.org/manual/Adding-Hyperlink-Types.html
 ** [ ] Thread watcher
 ** [ ] Auto update (optional) for threads
 ** [ ] Support other sites
-** [ ] Promote org headings in posts by an appropriate level
-** [ ] Escape org headings in code blocks 
+** [X] Promote org headings in posts by an appropriate level
+** [X] Escape org headings in code blocks 
 ** [ ] Point dead links to 4chan archives
 ** [ ] SRS-based help and warning messages [1/7]
 - p-list or hash-table with symbol of a message as key
