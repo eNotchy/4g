@@ -92,6 +92,14 @@
 (ert-deftest 4g-test-latex-tag-conversion ()
   (should (equal "\\[x=4\\]" (4g--node->org "[math]x=4[/math]"))))
 
+(ert-deftest 4g-test-rx-org-heading-start ()
+  (should
+   (string= (replace-regexp-in-string
+             4g--rx-org-heading-start
+             ""
+             "this * is not a heading\n** but this is")
+            "this * is not a heading\nbut this is")))
+
 (provide '4g-tests)
 
 ;;; 4g-tests.el ends here
