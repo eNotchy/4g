@@ -66,8 +66,8 @@ Uses Board names (strings) as keys, returns a list of threads.")
 ;;; --- Global Constants -------------------------------------------------------
 
 (defconst 4g-version
-  "0.9.5")
-  ;;(concat "DEV-" (format-time-string "%s")))
+  ;; "0.9.5")
+  (concat "DEV-" (format-time-string "%s")))
 
 (defconst 4g--media-types
   (map-pairs
@@ -359,7 +359,7 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
     (setq 4g--boards boards)))
 
 (defun 4g--download-callback (status dest)
-  (if-let (err (plist-get status :error))
+  (if-let* ((err (plist-get status :error)))
       (error "Failed to download %s: %s" dest err)
     (make-directory (file-name-directory dest) 'parents)
     (goto-char (point-min))
@@ -414,7 +414,7 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
 
 (defun 4g--redisplay-images ()
   (when (eq major-mode #'org-mode)
-    (org-redisplay-inline-images)))
+    (org-link-preview-refresh)))
 
 (cl-defun 4g--download-files
     (url->dest &key (retries 5) (retry-delay 3) callback)
@@ -500,7 +500,7 @@ CALLBACK takes no arguments."
   "Show PROMPT (a string) and present CHOICES (an alist) with descriptions."
   (let* ((cands (map-keys choices))
          (ann   (lambda (s)
-                  (when-let ((desc (map-elt choices s)))
+                  (when-let* ((desc (map-elt choices s)))
                     (concat "  " desc))))   ; shown dimly to the right
          (completion-extra-properties `(:annotation-function ,ann)))
     (completing-read prompt cands)))
@@ -797,7 +797,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
   ;; Org comes with org-heading-regexp, but it trims the heading's whitespace,
   ;; which is not what we want when escaping headings inside of src blocks.
   (rx line-start (group (+? "*")) space)
-  "Match the stars and one space of an Org heading. Put stars in group 1.")
+  "Match the stars and one space of an Org heading.  Put stars in group 1.")
 
 (defconst 4g--rx-quotelink-crossthread-href
   (rx string-start "/"
@@ -913,8 +913,8 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defun 4g--guess-code-language (code)
   "Guess the language of CODE.  Return nil if no language was recognized."
-  (when-let ((s code)
-             (case-fold-search t))
+  (when-let* ((s code)
+              (case-fold-search t))
     (or (4g--lang-from-hashbang s)
         (map-some (lambda (regexp lang)
                     (when (string-match-p regexp s)
@@ -936,7 +936,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
       (dom-children))))
 
 (defun 4g--orgify-com-dom (html)
-  "Convert a 4chan :com HTML fragment to Org using libxml DOM. "
+  "Convert a 4chan :com HTML fragment to Org using libxml DOM."
   (thread-last
     (4g--com->nodes html)
     (mapconcat #'4g--node->org)
@@ -1037,8 +1037,8 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 (defun 4g--find-backlinks (posts)
   (thread-last posts
     (seq-map (lambda (post)
-               (when-let ((com (map-elt post :com))
-                          (no  (map-elt post :no)))
+               (when-let* ((com (map-elt post :com))
+                           (no  (map-elt post :no)))
                  (thread-last
                    (4g--find-all-matches com 4g--rx-quotelink-inpage :group 1)
                    (seq-map #'string-to-number)
@@ -1048,7 +1048,7 @@ These are all I've seen on 4chan.  Open a PR for any others you come across.")
 
 (defun 4g--add-backlinks (posts backlinks)
   (seq-map (lambda (post)
-             (if-let ((links (map-elt backlinks (map-elt post :no))))
+             (if-let* ((links (map-elt backlinks (map-elt post :no))))
                  (map-insert post :backlinks links)
                post))
            posts))
@@ -1203,8 +1203,8 @@ To create a link to the thread, call it with a BOARD arg."
 Includes an OP line as a ** heading and its last_replies as *** headings."
   (let* ((op-line  (4g--op->org thd :board board :align-to 19))
          (op-reply (4g--reply->org board thd))
-         (replystr (when-let ((replies (map-elt thd :last_replies))
-                              (replyfn (apply-partially #'4g--reply->org board)))
+         (replystr (when-let* ((replies (map-elt thd :last_replies))
+                               (replyfn (apply-partially #'4g--reply->org board)))
                      (concat "\n*** " (mapconcat replyfn replies "\n\n*** ")))))
     (concat
      "\n** "  op-line
