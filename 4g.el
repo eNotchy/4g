@@ -67,7 +67,7 @@ Uses Board names (strings) as keys, returns a list of threads.")
 
 (defconst 4g-version
   ;; "0.9.5")
-  (concat "DEV-" (format-time-string "%s")))
+  (concat "0.9.5+DEV-" (format-time-string "%s")))
 
 (defconst 4g--media-types
   (map-pairs
@@ -414,7 +414,9 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
 
 (defun 4g--redisplay-images ()
   (when (eq major-mode #'org-mode)
-    (org-link-preview-refresh)))
+    (if (fboundp 'org-link-preview-refresh)
+        (org-link-preview-refresh)      ; Org 9.8 / Emacs 31
+      (org-redisplay-inline-images))))  ; Org 9.7 / Emacs 30
 
 (cl-defun 4g--download-files
     (url->dest &key (retries 5) (retry-delay 3) callback)
