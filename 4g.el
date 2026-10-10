@@ -415,8 +415,9 @@ Return objects as PLISTs and arrays as LISTs.  Error on failure."
 (defun 4g--redisplay-images ()
   (when (eq major-mode #'org-mode)
     (if (fboundp 'org-link-preview-refresh)
-        (org-link-preview-refresh)      ; Org 9.8 / Emacs 31
-      (org-redisplay-inline-images))))  ; Org 9.7 / Emacs 30
+        (org-link-preview-refresh)        ; Org 9.8 / Emacs 31
+      (with-suppressed-warnings ((obsolete org-redisplay-inline-images))
+        (org-redisplay-inline-images))))) ; Org 9.7 / Emacs 30
 
 (cl-defun 4g--download-files
     (url->dest &key (retries 5) (retry-delay 3) callback)
